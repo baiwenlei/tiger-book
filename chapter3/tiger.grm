@@ -30,6 +30,14 @@ void yyerror(char *s)
   BREAK NIL
   FUNCTION VAR TYPE 
 
+%left ELSE
+%right ASSIGN
+%left AND OR
+%nonassoc EQ NEQ LT LE GT GE
+%left ADD MINUS
+%left TIMES DIVIDE
+%right UMINUS
+
 %start program
 
 %%
@@ -39,7 +47,153 @@ void yyerror(char *s)
  *  to replace the two dummy productions below with an actual grammar. 
  */
 
-program:	exp
+program : expr
+        ;
 
-exp:   ID
+expr : primary_expr
+     | seq_expr
+     | funcall_expr
+     | op_expr
+     | objexpr
+     | array_expr
+     | assign_expr
+     | if_expr
+     | if_else_expr
+     | while_expr
+     | for_expr
+     | break_expr
+     | let_expr
+     ;
+
+primary_expr : lvalue
+             | INT
+             | STRING
+             | NIL
+             | MINUS primary_expr %prec UMINUS
+             ;
+
+lvalue : ID
+       | lvalue DOT ID
+       | lvalue LBRACK expr RBRACK
+       ;
+
+assign_expr : lvalue ASSIGN expr
+            ;
+
+seq_expr : LPAREN seq_expr_inner RPAREN
+         ;
+
+seq_expr_inner : expr
+               | seq_expr_inner SEMICOLON expr
+               ;
+
+funcall_expr : ID LPAREN opt_arglist RPAREN
+
+opt_arglist : 
+            | arglist
+            ;
+
+arglist : expr
+        | arglist COMMA expr
+        ;
+
+op_expr : expr ADD expr
+        | expr MINUS expr
+        | expr TIMES expr
+        | expr DIVIDE expr
+        | expr EQ expr
+        | expr NEQ expr
+        | expr LT expr
+        | expr LE expr 
+        | expr GT expr
+        | expr GE expr
+        | expr AND expr
+        | expr OR expr
+        ;
+
+objexpr : type-id LPAREN opt_objfield_inits RPAREN
+        ;
+
+opt_objfield_inits : 
+                   | objfield_inits
+                   ;
+
+objfield_inits : objfield_init
+               | objfield_inits COMMA objfield_init
+
+objfield_init : ID EQ expr
+              ;
+
+array_expr : type-id LBRACK expr RBRACK OF expr
+           ;
+
+if_expr : IF expr THEN expr
+        ;
+
+if_else_expr : IF expr THEN expr ELSE expr
+             ;
+
+while_expr : WHILE expr DO expr
+           ;
+
+for_expr : FOR ID ASSIGN expr TO expr DO expr
+         ;
+
+break_expr : BREAK
+           ;
+
+let_expr : LET opt_decs IN opt_block_expr END
+         ;
+
+opt_block_expr : 
+               | block_expr
+               ;
+
+block_expr : expr
+           | block_expr SEMICOLON expr
+           ;
+
+opt_decs : 
+         | decs
+         ;
+
+decs : dec
+     | decs dec
+     ;
+
+dec : typedec
+    | vardec
+    | fundec
+    ;
+
+typedec : TYPE type-id EQ ty
+        ;
+
+ty : type-id
+   | LPAREN opt-type-fields RPAREN
+   | ARRAY OF type-id
+   ;
+
+opt-type-fields : 
+                | type-fileds
+                ;
+
+type-fileds : type-fileds COMMA type-filed
+            | type-filed
+            ;
+
+type-filed : ID COLON type-id
+           ;
+
+type-id : ID
+        ;
+
+vardec : VAR ID ASSIGN expr
+       | VAR ID COLON type-id ASSIGN expr
+       ;
+
+fundec : FUNCTION ID LPAREN opt-type-fields RPAREN EQ expr
+       | FUNCTION ID LPAREN opt-type-fields RPAREN COLON type-id EQ expr
+       ;
+
 
