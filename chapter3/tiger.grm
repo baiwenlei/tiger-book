@@ -31,8 +31,11 @@ void yyerror(char *s)
   FUNCTION VAR TYPE 
 
 %nonassoc DO
+/*
 %nonassoc THEN
 %nonassoc ELSE
+*/
+%right THEN ELSE
 %nonassoc OF
 %right ASSIGN
 %left AND OR
