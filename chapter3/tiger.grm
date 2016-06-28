@@ -37,7 +37,7 @@ void yyerror(char *s)
 %right ASSIGN
 %left AND OR
 %nonassoc EQ NEQ LT LE GT GE
-%left ADD MINUS
+%left PLUS MINUS
 %left TIMES DIVIDE
 %right UMINUS
 
@@ -100,7 +100,7 @@ arglist : expr
         | arglist COMMA expr
         ;
 
-op_expr : expr ADD expr
+op_expr : expr PLUS expr
         | expr MINUS expr
         | expr TIMES expr
         | expr DIVIDE expr
